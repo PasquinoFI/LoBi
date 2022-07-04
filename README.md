@@ -1,7 +1,7 @@
 # Load_profiles_from_bills
 
 ### Authors
-**Pietro Lubello**, **Mattia Pasqui** and **Carlo Carcasci**\
+**Mattia Pasqui**, **Pietro Lubello** and **Carlo Carcasci**\
 Department of Industrial Engineering (DIEF), University of Florence (UNIFI), Italy
 
 ## Overview
