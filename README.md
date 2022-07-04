@@ -5,7 +5,8 @@
 Department of Industrial Engineering (DIEF), University of Florence (UNIFI), Italy
 
 ## Overview
-This tool generates load profiles with an hourly time step starting from electricity bills information\
+This tool generates load_profiles.scv with an hourly time step starting from electricity bills information\
+These output could be usefull as input for energy simulator software as https://github.com/pielube/MESSpy/edit/main/README.md
 Work in progress ...
 
 ### Requirements
