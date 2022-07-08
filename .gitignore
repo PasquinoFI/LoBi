@@ -1,7 +1,7 @@
 __pycache__/
 bills_dev/
-run_dev.py/
 generated_profiles/
 pre_processing/
 post_processing/
+run_dev.py
 
