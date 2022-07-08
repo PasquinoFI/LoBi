@@ -1,24 +1,12 @@
+"""
+LoBi: Load profiles from Bills
+
+Time slot definition: F1 F2 F3 under Italian regoulation
+"""
+
 import numpy as np
 import pandas as pd
-import random
 from collections import Counter
-import matplotlib.pyplot as plt
-
-" load profiles from bills"
-
-
-# import bill
-bill_demand = pd.read_excel('bill.xlsx') # dataframe 12x3
-bill_demand.columns = ('kWh',1,2,3,'Tot') # index correction
-
-# household input
-o = 4 # occupants
-do = 1 # occupants during daylight hours
-
-# iperparameters
-
-
-############################################ Time slot definition F1 F2 F3
 
 Weekday = np.ones(24)
 Saturday = np.zeros(24)
@@ -34,6 +22,7 @@ Weekday[0:7] = 3
 Weekday[23] = 3
 Saturday[0:7] = 3
 Saturday[23] = 3    
+# F3 holiday still to add
 
 ### F2
 Saturday[7:23] = 2
@@ -59,14 +48,20 @@ for d in range(365):
     for h in range(24):
         
         if dt == 1:
-            f = Weekday[h]
+            ts = Weekday[h]
         if dt == 2:
-            f = Saturday[h]
+            ts = Saturday[h]
         if dt == 3:
-            f = Sunday[h]
+            ts = Sunday[h]
             
-        time_slots.append(f)
+        time_slots.append(ts)
         months_8760.append(m)
         
 time_slots = np.array(time_slots)
 months_8760 = np.array(months_8760)
+
+# counting hours avaible in each time-slot of each month
+hours_available = pd.DataFrame(np.tile(np.zeros(3),(12,1)),index=np.arange(12),columns=(1,2,3)) # initialise dataframe 12x3 available hours of each time slot in every month
+for ts in [1,2,3]:
+    for m in np.arange(12):                            
+        hours_available[ts][m] = Counter(time_slots[months_8760==m])[ts]
