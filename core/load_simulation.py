@@ -1,5 +1,5 @@
-from time_slots import *
-import stochastic_distribution as sd
+from core.time_slots import *
+import core.stochastic_distribution as sd
 import numpy as np
 import pandas as pd
 
@@ -29,7 +29,7 @@ def random_profile(p_min,p_max,bill_name):
     """
     
     # import bill
-    bill = pd.read_excel(f"{bill_name}.xlsx") # dataframe 12x3
+    bill = pd.read_excel(f"bills/{bill_name}.xlsx") # dataframe 12x3
     
     # initialise load profile
     load = np.zeros(8760)
@@ -41,7 +41,7 @@ def random_profile(p_min,p_max,bill_name):
         load[h] = sd.mmm_distribution( p_min, p_max, (bill[ts][m] / hours_available[ts][m]) , 3)
                                   
     load = pd.DataFrame(load)
-    load.to_csv(f"{bill_name}_random_profile.csv")
+    load.to_csv(f"generated_profiles/{bill_name}_random_profile.csv")
         
     return()        
                            
@@ -71,7 +71,7 @@ def weighted_profile(p_min,p_max,bill_name,weights):
     """
     
     # import bill
-    bill = pd.read_excel(f"{bill_name}.xlsx") # dataframe 12x3
+    bill = pd.read_excel(f"bills/{bill_name}.xlsx") # dataframe 12x3
     
     # initialise load profile
     load = np.zeros(8760)
@@ -83,7 +83,7 @@ def weighted_profile(p_min,p_max,bill_name,weights):
         load[h] = sd.mmm_distribution( p_min, p_max, (bill[ts][m] / hours_available[ts][m]) , 3)
                                   
     load = pd.DataFrame(load)
-    load.to_csv(f"{bill_name}_random_profile.csv")
+    load.to_csv(f"generated_profiles/{bill_name}_random_profile.csv")
     
     return()
 
