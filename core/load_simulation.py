@@ -1,5 +1,6 @@
 from core.time_slots import *
 import core.stochastic_distribution as sd
+import core.load_shifting as load_shifting
 import numpy as np
 import pandas as pd
 import os
@@ -37,7 +38,7 @@ def random_profile(p_min,p_max,bill_folder,bill_name,shifting=False):
     bill = pd.read_excel(f"{bill_folder}/{bill_name}.xlsx") # dataframe 12x3
     
     if shifting:
-        bill = load_shifting(bill,shifting)
+        bill = load_shifting.load_shifting(bill,shifting)
     
     # initialise load profile
     load = np.zeros(8760)
@@ -67,38 +68,6 @@ def random_profile(p_min,p_max,bill_folder,bill_name,shifting=False):
         
     return()        
                            
-
-def load_shifting(bill,shifting):
-    '''
-    
-    Parameters
-    ----------
-    bill : database 12x3
-        enercy consumed in each time slot of each month
-    shifting : dict
-        "12": float [0-100] energy to shift from F1 to F2
-        "13": float [0-100] energy to shift from F1 to F3
-        "21": ...
-        "23": ...
-        "31": ...
-        "32": ...       
-
-    Returns
-    -------
-    New bill (database 12x3)
-
-    '''
-     
-    for m in bill.index:
-        for ls in shifting:
-            
-            from_ = int(str(ls)[0])
-            to = int(str(ls)[1])
-            
-            bill[to][m] += bill[from_][m] * ( shifting[ls] / 100 )
-            bill[from_][m] += - bill[from_][m] * ( shifting[ls] / 100 )
-    
-    return(bill)
     
 
 
