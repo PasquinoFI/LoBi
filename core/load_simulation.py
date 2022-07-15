@@ -48,7 +48,7 @@ def random_profile(p_min,p_max,bill_folder,bill_name,):
     if not os.path.exists(directory):
         os.makedirs(directory)                              
     load = pd.DataFrame(load)
-    load.to_csv(f"{directory}/{bill_name}_random_profile.csv")
+    load.to_csv(f"{directory}/{bill_name}_rp.csv")
         
     return()        
                            

@@ -7,5 +7,5 @@ run
 import core.load_simulation as ls
 
 
-ls.random_profile(0.001, 3, "bills_test", "example_0")
+ls.random_profile(0.002, 3, "bills_test", "example_0")
 
