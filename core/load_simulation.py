@@ -1,6 +1,6 @@
 from core.time_slots import *
 import core.stochastic_distribution as sd
-import core.load_shifting as load_shifting
+from core.load_shifting import load_shifting
 import numpy as np
 import pandas as pd
 import os
@@ -38,7 +38,7 @@ def random_profile(p_min,p_max,bill_folder,bill_name,shifting=False):
     bill = pd.read_excel(f"{bill_folder}/{bill_name}.xlsx") # dataframe 12x3
     
     if shifting:
-        bill = load_shifting.load_shifting(bill,shifting)
+        bill = load_shifting(bill,shifting)
     
     # initialise load profile
     load = np.zeros(8760)

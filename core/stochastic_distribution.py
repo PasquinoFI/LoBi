@@ -16,13 +16,21 @@ def mmm_distribution(minimum, maximum, mean, decimal):
     """
     
     delta=maximum-minimum
-    left=mean-minimum
-    k=left/delta
-    d=random.random()
     
-    if d>k:  
-        v=random.uniform(minimum,mean)
+    if delta>0:
+        left=mean-minimum
+        k=left/delta
+        d=random.random()
+        
+        if d>k:  
+            v=random.uniform(minimum,mean)
+        else:
+            v=random.uniform(mean,maximum)  
+    
     else:
-        v=random.uniform(mean,maximum)  
+        v = 0
         
     return(round(v,decimal))
+
+    
+    
