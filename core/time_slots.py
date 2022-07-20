@@ -8,13 +8,15 @@ import numpy as np
 import pandas as pd
 from collections import Counter
 
+f_St = 0 # first saturday of the year 01/01/2022 was Saturday 
+
 Weekday = np.ones(24)
 Saturday = np.zeros(24)
 Sunday = np.zeros(24)    
 
 Day_type = np.ones(365) # 1=Weekday 2=Saturday 3=Sunday
-Day_type[5:365:7] = 2 
-Day_type[6:365:7] = 3 
+Day_type[f_St:365:7] = 2 
+Day_type[(f_St)+1:365:7] = 3 
  
 ### F3
 Sunday[0:24] = 3 
@@ -22,7 +24,17 @@ Weekday[0:7] = 3
 Weekday[23] = 3
 Saturday[0:7] = 3
 Saturday[23] = 3    
-# F3 holiday still to add
+# F3 holidays
+Day_type[0] = 3 # 01/01
+Day_type[5] = 3 # 06/01
+Day_type[114] = 3 # 25/04
+Day_type[120] = 3 # 01/05
+Day_type[152] = 3 # 02/06
+Day_type[226] = 3 # 15/08
+Day_type[304] = 3 # 01/11
+Day_type[341] = 3 # 08/12
+Day_type[358] = 3 # 25/12
+Day_type[359] = 3 # 26/12
 
 ### F2
 Saturday[7:23] = 2
