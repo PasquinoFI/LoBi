@@ -99,4 +99,6 @@ def load_shifting2(serie,shifting):
             
         else:
             residual[ts][m] = 0
+            
+    return(serie)
     
