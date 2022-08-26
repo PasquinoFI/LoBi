@@ -77,3 +77,12 @@ hours_available = pd.DataFrame(np.tile(np.zeros(3),(12,1)),index=np.arange(12),c
 for ts in [1,2,3]:
     for m in np.arange(12):                            
         hours_available[ts][m] = Counter(time_slots[months_8760==m])[ts]
+
+# =============================================================================
+# ts = pd.DataFrame(time_slots)
+# ts.to_csv('time_slots.csv')
+# 
+# m = pd.DataFrame(months_8760)
+# m.to_csv('months.csv')
+# =============================================================================
+

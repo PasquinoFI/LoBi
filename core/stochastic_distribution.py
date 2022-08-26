@@ -15,11 +15,10 @@ def mmm_distribution(minimum, maximum, mean, decimal):
     Decimal is the number of decimal to return
     """
     
-    delta=maximum-minimum
-    
-    if delta>0:
+    if minimum <= mean < maximum:
+        
         left=mean-minimum
-        k=left/delta
+        k=left/(maximum-minimum)
         d=random.random()
         
         if d>k:  
@@ -28,7 +27,19 @@ def mmm_distribution(minimum, maximum, mean, decimal):
             v=random.uniform(mean,maximum)  
     
     else:
-        v = 0
+        if mean < minimum:
+            v = mean
+        
+        if minimum > maximum:
+            print("the minimum must be less than the maximum")
+            v = 0
+            
+        if mean > maximum:
+            v = maximum
+            print(mean)
+            print(maximum)
+            print("the mean must be less than the maximum")
+            
         
     return(round(v,decimal))
 

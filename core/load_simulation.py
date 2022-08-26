@@ -64,6 +64,7 @@ def random_profile(p_min,p_max,bill_folder,bill_name,shifting=False):
         
         name = f"{bill_name}_rp{shift}.csv"
     
+    load.columns = ['kWh']
     load.to_csv(f"{directory}/{name}")
         
     return()        
