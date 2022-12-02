@@ -13,6 +13,7 @@ Work in progress ...
 The model is developed in Python 3.9, and requires the following libraries:
 - numpy
 - pandas
+- random
 
 ## Quick start
 
