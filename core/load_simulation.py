@@ -55,7 +55,7 @@ def random_profile(p_min,p_max,bill_folder,bill_name,shifting=False):
         os.makedirs(directory)                              
     load = pd.DataFrame(load)
     
-    name = f"{bill_name}_rp.csv"
+    name = f"{bill_name}_rp5.csv"
     if shifting:
         shift = ""
         for ls in shifting:    
@@ -69,6 +69,79 @@ def random_profile(p_min,p_max,bill_folder,bill_name,shifting=False):
         
     return()        
                            
+    
+def gas_pub(bill_folder, bill_name, apertura, chiusura):
+    # per ora è aperto tutti i giorni
+    # sempre agli stessi orari
+    # aggiungere temperature giornaliere come pesi
+    
+    # import bill
+    bill = pd.read_excel(f"{bill_folder}/{bill_name}.xlsx") # dataframe 12x1
+    
+    # initialise load profile
+    load = np.zeros(8760)
+    
+    # simulate load each hour
+    for h in np.arange(8760):
+        m = months_8760[h]    
+        if (h%24 >= apertura or h%24 < chiusura): # se il pub è aperto
+            mean = bill['smc'][m] / (dm[m]*(24-apertura+chiusura))
+            load[h] = sd.mmm_distribution( 0, mean*1.5, mean , 3) 
+            load[h] = load[h]*10.69     # smc to kWh (1 smc = 10.69 kWh)
+            load[h] = load[h]*0.9       # efficiency caldaia
+            
+    
+    # save file.csv
+    directory = './generated_profiles'
+    if not os.path.exists(directory):
+        os.makedirs(directory)                              
+    load = pd.DataFrame(load)
+    
+    name = f"{bill_name}_kWh_th.csv"
+    
+    load.columns = ['kWh']
+    load.to_csv(f"{directory}/{name}")
+        
+    return()        
+    
+
+def gas_residential(bill_folder, bill_name, timetables):
+    # aggiungere temperature giornaliere come pesi
+    
+    # timetables examples: [7,8,9,16,17,18,19,20,21,22]
+    
+    # import bill
+    bill = pd.read_excel(f"{bill_folder}/{bill_name}.xlsx") # dataframe 12x1
+    
+    # initialise load profile
+    load = np.zeros(8760)
+    
+    # simulate load each hour
+    for h in np.arange(8760):
+        m = months_8760[h]    
+        mean = bill['smc'][m] / (dm[m]*len(timetables))
+        if h%24 in timetables: # heating on
+            load[h] = sd.mmm_distribution( 0, mean*1.2, mean , 3) 
+            load[h] = load[h]*10.69     # smc to kWh (1 smc = 10.69 kWh)
+            load[h] = load[h]*0.9       # efficiency caldaia
+            
+    # save file.csv
+    directory = './generated_profiles'
+    if not os.path.exists(directory):
+        os.makedirs(directory)                              
+    load = pd.DataFrame(load)
+    
+    name = f"{bill_name}_kWh_th.csv"
+    
+    load.columns = ['kWh']
+    load.to_csv(f"{directory}/{name}")
+        
+    return() 
+                
+                
+    
+    
+    
     
 
 

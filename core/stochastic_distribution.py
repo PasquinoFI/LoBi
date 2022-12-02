@@ -39,8 +39,7 @@ def mmm_distribution(minimum, maximum, mean, decimal):
             print(mean)
             print(maximum)
             print("the mean must be less than the maximum")
-            
-        
+
     return(round(v,decimal))
 
     
