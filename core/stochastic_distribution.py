@@ -1,12 +1,12 @@
 """
 LoBi: Load profiles from Bills
 
-stochastic distribution used to simulate load
+stochastic distribution used to simulate random load
 """
 
 import random
 
-def mmm_distribution(minimum, maximum, mean, decimal):      
+def mmm_distribution(minimum, maximum, mean):      
     """
     This function randomly extracts a value from a probability distribution 
     of which we know the minimum, maximum and mean.
@@ -28,6 +28,7 @@ def mmm_distribution(minimum, maximum, mean, decimal):
     
     else:
         if mean < minimum:
+            print("the minimum value set is too high")
             v = mean
         
         if minimum > maximum:
@@ -36,11 +37,9 @@ def mmm_distribution(minimum, maximum, mean, decimal):
             
         if mean > maximum:
             v = maximum
-            print(mean)
-            print(maximum)
-            print("the mean must be less than the maximum")
+            print("the maximum value set is too low")
 
-    return(round(v,decimal))
+    return(v)
 
     
     
