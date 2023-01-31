@@ -9,7 +9,10 @@ from core.load_shifting import load_shifting
 import numpy as np
 import pandas as pd
 import os
-        
+import pvlib
+import pickle
+
+
 def electricity_profile(foldername, filename, year, random=False, shifting=False, output=False):
     """
     
@@ -119,7 +122,6 @@ def electricity_profile(foldername, filename, year, random=False, shifting=False
     df = df.round(3)
     load = df.loc[:,'Load']
     load = pd.DataFrame(load)
-    load.columns = ['kWh']
     load.to_csv(f"{directory}/{name}.csv")
     
     if output:
@@ -129,10 +131,204 @@ def electricity_profile(foldername, filename, year, random=False, shifting=False
                            
     
 
-# =============================================================================
-# def heating_profile():
-#     # coming soon...
-# =============================================================================
+def heating_profile(foldername, filename, year, latitude, longitude, climate_zone=False, output=False):
+    """
+    
+    Parameters
+    ----------
+
+    filename :  str
+        bill file name, the file must be formatted as bill_example.xlsx
+        
+    foldername: str
+        name of the folder in which the bill is
+        
+    year: int
+        
+    latitude,longitude: float
+    
+    climate_zone: bool
+        if True GG, climate climate_zone and relative limits on heating ignition are calculated and imposed
+        
+    Returns
+    -------
+    file.csv 
+    simulated heatig profile each hour of the year [kWh]
+
+    """
+
+    # reading input data
+    bills = pd.read_excel(f"{foldername}/{filename}.xlsx", sheet_name='bills', header=0, index_col='Month')
+    bills['kWh'] = bills['smc'] * 10.69
+    schedules = pd.read_excel(f"{foldername}/{filename}.xlsx",  sheet_name='schedules', header=0, index_col='Hour')
+    dhw_profile = pd.read_excel(f"{foldername}/{filename}.xlsx",  sheet_name='dhw', header=0, index_col='Hour')
+    festivities = pd.read_excel(f"{foldername}/{filename}.xlsx", sheet_name='festivities', header=0)    
+    festivities = pd.to_datetime(festivities['Festivities']).dt.date.tolist() # Transform "festivities" DataFrame in a List 
+    festivities = [date_obj.strftime('%Y-%m-%d') for date_obj in festivities]   
+    holidays = pd.read_excel(f"{foldername}/{filename}.xlsx", sheet_name='holidays', header=0)
+    holidays = pd.to_datetime(holidays['Holidays']).dt.date.tolist()
+    holidays = [date_obj.strftime('%Y-%m-%d') for date_obj in holidays]
+    
+    # Generation of the basic datetime index
+    datetime_index = pd.date_range(start = f'01-01-{year} 00:00', end   = f'31-12-{year} 23:00', freq  = 'H')    
+    df = pd.DataFrame(datetime_index).set_index(0) 
+    
+    # Day type 0-7
+    df['DayType'] = df.index.weekday      
+    for date in festivities:                                                                 # Set festivities
+        df.loc[date, 'DayType'] = 6
+    for date in holidays:                                                                   
+        df.loc[date, 'DayType'] = 7                                                          # Set holidays
+   
+    # Month and day
+    df['Month'] = df.index.month
+    df['Hour'] = df.index.hour
+       
+    # Air-temperature
+    check = True # True if latitude and longitude are not changed from the old simulation
+    directory = './previous_simulation'
+    if not os.path.exists(directory): os.makedirs(directory)
+    if os.path.exists('previous_simulation/location.pkl'):
+        with open('previous_simulation/location.pkl', 'rb') as f: location = pickle.load(f) # previous simulation location
+        if location['latitude'] != latitude or location['longitude'] != longitude:
+            check = False  
+    else:
+        check = False                     
+    if check and os.path.exists('previous_simulation/air_temperatures.csv'): # if the prevoius air_previous_simulatuion series can be used
+        temp = pd.read_csv('previous_simulation/air_temperatures.csv')
+    else: # if new air_temperature data must be downoladed from PV gis
+        print('Downolading typical metereological year data from PVGIS')   
+        temp = pvlib.iotools.get_pvgis_tmy(latitude, longitude, map_variables=True)[0]['temp_air']
+        temp = pd.DataFrame(temp)
+        temp.to_csv('previous_simulation/air_temperatures.csv')
+        # save new location in previous_simulation            
+        with open('previous_simulation/location.pkl', 'wb') as f: pickle.dump({'latitude':latitude,'longitude':longitude}, f)     
+    
+    # Schedules
+    schedules.columns = [0,1,2,3,4,5,6,7]
+    for i,ind in enumerate(df.index):
+        h = df.loc[ind,'Hour']
+        dt = df.loc[ind,'DayType']
+        df.loc[ind,'schedules'] = schedules.loc[h,dt]
+    
+    # GG
+    datetime_index = pd.date_range(start = f'01-01-{year} 00:00', end   = f'31-12-{year} 23:00', freq  = 'H')    
+    temp.index = datetime_index
+    temp = temp.resample('D').mean() # daily mean temperature
+    temp['Month'] = temp.index.month
+    temp['GG'] = 20 - temp['temp_air']
+    temp.loc[temp['GG'] < 0 , 'GG'] = 0
+    
+    # dhw + cooking 
+    bills['dhw_arera'] = [0.3307,0.3378,0.3002,0.2830,0.2545,0.2403,0.2133,0.2106,0.2400,0.2622,0.2984,0.3218] #ARERA
+    bills['dhw'] = 0
+    for m,ind in enumerate(bills.index):
+        bills.loc[ind,'dhw'] = min( bills.loc[ind,'kWh'] , bills.loc[ind,'dhw_arera'] / bills.loc[9,'dhw_arera'] * bills.loc[9,'kWh'])
+    
+    # calculate GGa and relative climate zone limits
+    GGa = temp.loc[: , 'GG'].sum()
+    if GGa < 600:
+        climate_zone = ['03-15','12-01'] # A
+        bills.loc[4:11,'dhw'] = bills.loc[4:11,'kWh']
+    elif GGa < 900:
+        climate_zone = ['03-31','12-01'] # B
+        bills.loc[4:11,'dhw'] = bills.loc[4:11,'kWh']
+    elif GGa < 1400:
+        climate_zone = ['03-31','11-15'] # C
+        bills.loc[4:10,'dhw'] = bills.loc[4:10,'kWh']
+    elif GGa < 2100:
+        climate_zone = ['04-15','11-01'] # D
+        bills.loc[5:10,'dhw'] = bills.loc[5:10,'kWh']
+    elif GGa < 3000:
+        climate_zone = ['04-15','10-15'] # E
+        bills.loc[5:10,'dhw'] = bills.loc[5:10,'kWh']
+    else:
+        climate_zone = False             # F
+        bills.loc[5:10,'dhw'] = bills.loc[5:10,'kWh']
+            
+    if climate_zone:
+        zone1 = f"{year}-{climate_zone[0]}"
+        zone2 = f"{year}-{climate_zone[1]}"
+        df.loc[zone1:zone2,'schedules'] = 0
+            
+    bills['heating'] = bills['kWh'] - bills['dhw'] # devide heat from dhw and cooking
+    
+    temp['switch-on hours'] = df.resample('D').sum()['schedules']
+    
+    temp.loc[temp['switch-on hours']==0,'GG'] = 0 
+         
+    for i,gm in enumerate(temp.resample('M').sum()['GG']):
+        bills.loc[i+1,'GM'] = gm
+        if gm>0:
+            bills.loc[i+1,'heating/GM'] = bills.loc[i+1,'heating'] / gm
+        else:
+            bills.loc[i+1,'heating/GM'] = 0
+            
+    for i, ind in enumerate(temp.index):
+        m = temp.loc[ind,'Month']
+        temp.loc[ind,'heating'] = temp.loc[ind,'GG'] * bills.loc[m,'heating/GM']
+        
+    temp['heating/soh'] = temp['heating'] / temp['switch-on hours']
+    
+    # dhw: from monthly to daily
+    temp['ng'] = 1
+    temp.loc[df.resample('D').mean()['DayType']==7,'ng'] = 0 # festivities
+    bills['dhw/ng'] = 0
+    
+    for i,ng in enumerate(temp.resample('M').sum()['ng']):     
+        bills.loc[i+1,'dhw/ng'] = bills.loc[i+1,'dhw'] / ng
+    
+    # from daily to houyrly
+    
+    df['heating'] = 0
+    df['dhw'] = 0
+    for i,ind in enumerate(df.index):
+        
+        if df.loc[ind,'schedules'] == 1:
+           
+            ind2 = ind.date().strftime('%Y-%m-%d')
+            df.loc[ind,'heating'] = temp.loc[ind2,'heating/soh']
+            
+        if df.loc[ind,'DayType'] != 7:
+            m = df.loc[ind,'Month']
+            h = df.loc[ind,'Hour']
+            df.loc[ind,'dhw'] = bills.loc[m,'dhw/ng'] * dhw_profile.loc[h,'Profile'] / sum(dhw_profile['Profile'])
+                 
+    df['kWh'] = df['heating'] + df['dhw']
+
+    df = df.round(3)
+    load = df.loc[:,'kWh']
+    load = pd.DataFrame(load)
+    
+    # save file.csv
+    directory = './generated_profiles'
+    if not os.path.exists(directory): os.makedirs(directory)
+    load.to_csv(f"{directory}/{filename}.csv")
+  
+    if output:
+        return(df,temp,bills)
+    else:
+        return()
+    
+        
+    
+
+    
+
+    
+        
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    
                 
                 
     
