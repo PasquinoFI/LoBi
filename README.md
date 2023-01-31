@@ -7,7 +7,7 @@ Department of Industrial Engineering (DIEF), University of Florence (UNIFI), Ita
 ## Overview
 This tool generates load_profile.csv with an hourly time ste [kWh]\
 Heat load profiles can be generated using as input gas bills [smc]\
-Electric load profiles can be generated using as input electricity bills [kWh]\
+Electric load profiles can be generated using as input electricity bills [kWh]
 
 These output could be usefull as input for energy simulator software as https://github.com/pielube/MESSpy/edit/main/README.md \
 
