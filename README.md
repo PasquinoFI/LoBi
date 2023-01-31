@@ -1,19 +1,22 @@
 # Load_profiles_from_bills
 
 ### Authors
-**Mattia Pasqui**, **Pietro Lubello** and **Carlo Carcasci**\
+**Mattia Pasqui**, **Marzo Zini** and **Carlo Carcasci**\
 Department of Industrial Engineering (DIEF), University of Florence (UNIFI), Italy
 
 ## Overview
-This tool generates load_profile.csv with an hourly time step starting from electricity bills information\
+This tool generates load_profile.csv with an hourly time ste [kWh]
+Heat load profiles can be generated using as input gas bills [smc]
+Electric load profiles can be generated using as input electricity bills [kWh]\
+
 These output could be usefull as input for energy simulator software as https://github.com/pielube/MESSpy/edit/main/README.md \
-Work in progress ...
 
 ### Requirements
 The model is developed in Python 3.9, and requires the following libraries:
 - numpy
 - pandas
 - random
+- pvlib
 
 ## Quick start
 
