@@ -13,7 +13,7 @@ import pvlib
 import pickle
 
 
-def electricity_profile(foldername, filename, year, random=False, shifting=False, output=False):
+def electricity_profile(folder, bills, profiles, festivities, holidays, year, random=False, shifting=False, output=False):
     """
     
     Parameters
@@ -22,7 +22,7 @@ def electricity_profile(foldername, filename, year, random=False, shifting=False
     filename :  str
         bill file name, the file must be formatted as bill_example.xlsx
         
-    foldername: str
+    folder: str
         name of the folder in which the bill is
         
     random: list (optional)
@@ -44,13 +44,15 @@ def electricity_profile(foldername, filename, year, random=False, shifting=False
 
     """
         
+    name = bills # save name for results
+    
     # reading input data
-    bills = pd.read_excel(f"{foldername}/{filename}.xlsx", sheet_name='bills', header=0, index_col='Month')
-    loads = pd.read_excel(f"{foldername}/{filename}.xlsx",  sheet_name='loads', header=0, index_col='Hour')
-    festivities = pd.read_excel(f"{foldername}/{filename}.xlsx", sheet_name='festivities', header=0)    
+    bills = pd.read_excel(f"{folder}/{bills}.xlsx", header=0, index_col='Month')
+    loads = pd.read_excel(f"{folder}/{profiles}.xlsx", header=0, index_col='Hour')
+    festivities = pd.read_excel(f"{folder}/{festivities}.xlsx", header=0)    
     festivities = pd.to_datetime(festivities['Festivities']).dt.date.tolist() # Transform "festivities" DataFrame in a List 
     festivities = [date_obj.strftime('%Y-%m-%d') for date_obj in festivities]   
-    holidays = pd.read_excel(f"{foldername}/{filename}.xlsx", sheet_name='holidays', header=0)
+    holidays = pd.read_excel(f"{folder}/{holidays}.xlsx", header=0)
     holidays = pd.to_datetime(holidays['Holidays']).dt.date.tolist()
     holidays = [date_obj.strftime('%Y-%m-%d') for date_obj in holidays]
     
@@ -109,7 +111,6 @@ def electricity_profile(foldername, filename, year, random=False, shifting=False
     directory = './generated_profiles'
     if not os.path.exists(directory): os.makedirs(directory)   
                           
-    name = filename
     if shifting:
         shift = ""
         for ls in shifting:    
@@ -131,7 +132,7 @@ def electricity_profile(foldername, filename, year, random=False, shifting=False
                            
     
 
-def heating_profile(foldername, filename, year, latitude, longitude, climate_zone=False, output=False):
+def heating_profile(folder, bills, schedules, festivities, holidays, dhw, year, latitude, longitude, climate_zone=False, output=False):
     """
     
     Parameters
@@ -140,7 +141,7 @@ def heating_profile(foldername, filename, year, latitude, longitude, climate_zon
     filename :  str
         bill file name, the file must be formatted as bill_example.xlsx
         
-    foldername: str
+    folder: str
         name of the folder in which the bill is
         
     year: int
@@ -157,15 +158,17 @@ def heating_profile(foldername, filename, year, latitude, longitude, climate_zon
 
     """
 
+    name = bills # save name for results
+
     # reading input data
-    bills = pd.read_excel(f"{foldername}/{filename}.xlsx", sheet_name='bills', header=0, index_col='Month')
+    bills = pd.read_excel(f"{folder}/{bills}.xlsx", header=0, index_col='Month')
     bills['kWh'] = bills['smc'] * 10.69
-    schedules = pd.read_excel(f"{foldername}/{filename}.xlsx",  sheet_name='schedules', header=0, index_col='Hour')
-    dhw_profile = pd.read_excel(f"{foldername}/{filename}.xlsx",  sheet_name='dhw', header=0, index_col='Hour')
-    festivities = pd.read_excel(f"{foldername}/{filename}.xlsx", sheet_name='festivities', header=0)    
+    schedules = pd.read_excel(f"{folder}/{schedules}.xlsx",  header=0, index_col='Hour')
+    dhw_profile = pd.read_excel(f"{folder}/{dhw}.xlsx", header=0, index_col='Hour')
+    festivities = pd.read_excel(f"{folder}/{festivities}.xlsx",  header=0)    
     festivities = pd.to_datetime(festivities['Festivities']).dt.date.tolist() # Transform "festivities" DataFrame in a List 
     festivities = [date_obj.strftime('%Y-%m-%d') for date_obj in festivities]   
-    holidays = pd.read_excel(f"{foldername}/{filename}.xlsx", sheet_name='holidays', header=0)
+    holidays = pd.read_excel(f"{folder}/{holidays}.xlsx", header=0)
     holidays = pd.to_datetime(holidays['Holidays']).dt.date.tolist()
     holidays = [date_obj.strftime('%Y-%m-%d') for date_obj in holidays]
     
@@ -303,7 +306,7 @@ def heating_profile(foldername, filename, year, latitude, longitude, climate_zon
     # save file.csv
     directory = './generated_profiles'
     if not os.path.exists(directory): os.makedirs(directory)
-    load.to_csv(f"{directory}/{filename}.csv")
+    load.to_csv(f"{directory}/{name}.csv")
   
     if output:
         return(df,temp,bills)
