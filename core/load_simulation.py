@@ -121,7 +121,8 @@ def electricity_profile(folder, bills, profiles, festivities, holidays, year, ra
         name += '_rp'
         
     df = df.round(3)
-    load = df.loc[:,'Load']
+    df.rename(columns={'Load':'kWh'}, inplace=True)
+    load = df.loc[:,'kWh']
     load = pd.DataFrame(load)
     load.to_csv(f"{directory}/{name}.csv")
     
