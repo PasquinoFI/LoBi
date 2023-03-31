@@ -48,7 +48,6 @@ def electricity_profile(folder, bills, profiles, festivities, holidays, year, ra
     
     # reading input data
     bills = pd.read_excel(f"{folder}/{bills}.xlsx", header=0, index_col='Month')
-    loads = pd.read_excel(f"{folder}/{profiles}.xlsx", header=0, index_col='Hour')
     festivities = pd.read_excel(f"{folder}/{festivities}.xlsx", header=0)    
     festivities = pd.to_datetime(festivities['Festivities']).dt.date.tolist() # Transform "festivities" DataFrame in a List 
     festivities = [date_obj.strftime('%Y-%m-%d') for date_obj in festivities]   
@@ -56,6 +55,10 @@ def electricity_profile(folder, bills, profiles, festivities, holidays, year, ra
     holidays = pd.to_datetime(holidays['Holidays']).dt.date.tolist()
     holidays = [date_obj.strftime('%Y-%m-%d') for date_obj in holidays]
     
+    weights = {}
+    for m0 in range(12):
+        m = m0+1
+        weights[m] = pd.read_excel(f"{folder}/{profiles}.xlsx", header=0, index_col='Hour', sheet_name = m0)
     
     if shifting:
         bills = load_shifting(bills,shifting)
@@ -80,8 +83,9 @@ def electricity_profile(folder, bills, profiles, festivities, holidays, year, ra
     df['TimeSlot'].where(~mask_F2_e, other=2, inplace=True)                                  # Set 2 to F2 Workdays evening
     df['TimeSlot'].where(~mask_F2_s, other=2, inplace=True)                                  # Set 2 to F2 Saturdays
     
-    for date in holidays:                                                                   
-        df.loc[date, 'DayType'] = 7                                                          # Set holidays
+    for date in holidays:          
+        if df.loc[date,'DayType'][0] < 6:
+            df.loc[date, 'DayType'] = 7                                                          # Set holidays
     
     # Month
     df['Month'] = df.index.month
@@ -89,8 +93,9 @@ def electricity_profile(folder, bills, profiles, festivities, holidays, year, ra
     # Yearly unit profile generation
     df['UnitLoad'] = 0    
     for i, datetime in enumerate(df.index):
-        daytype = df.loc[datetime,'DayType']                                                                                                           
-        df.loc[datetime,'UnitLoad'] = loads.loc[df.index.hour[i], loads.columns[daytype]]               
+        daytype = df.loc[datetime,'DayType']    
+        month = df.loc[datetime,'Month']
+        df.loc[datetime,'UnitLoad'] = weights[month].loc[df.index.hour[i], weights[month].columns[daytype]]               
        
     # Calculate c_star coefficient: Total energy (unit) divided by month and timeslot
     c_star  = df.pivot_table(index='Month', columns='TimeSlot', values='UnitLoad', aggfunc=np.sum)  # [U/month]
