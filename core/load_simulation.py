@@ -126,8 +126,8 @@ def electricity_profile(folder, bills, profiles, festivities, holidays, year, ra
         name += '_rp'
         
     df = df.round(3)
-    df.rename(columns={'Load':'kWh'}, inplace=True)
-    load = df.loc[:,'kWh']
+    df.rename(columns={'Load':'kW'}, inplace=True)
+    load = df.loc[:,'kW']
     load = pd.DataFrame(load)
     load.to_csv(f"{directory}/{name}.csv")
     
@@ -168,7 +168,7 @@ def heating_profile(folder, bills, schedules, festivities, holidays, dhw, year, 
 
     # reading input data
     bills = pd.read_excel(f"{folder}/{bills}.xlsx", header=0, index_col='Month')
-    bills['kWh'] = bills['smc'] * 10.69
+    bills['kW'] = bills['smc'] * 10.69
     schedules = pd.read_excel(f"{folder}/{schedules}.xlsx",  header=0, index_col='Hour')
     dhw_profile = pd.read_excel(f"{folder}/{dhw}.xlsx", header=0, index_col='Hour')
     festivities = pd.read_excel(f"{folder}/{festivities}.xlsx",  header=0)    
@@ -232,35 +232,35 @@ def heating_profile(folder, bills, schedules, festivities, holidays, dhw, year, 
     bills['dhw_arera'] = [0.3307,0.3378,0.3002,0.2830,0.2545,0.2403,0.2133,0.2106,0.2400,0.2622,0.2984,0.3218] #ARERA
     bills['dhw'] = 0
     for m,ind in enumerate(bills.index):
-        bills.loc[ind,'dhw'] = min( bills.loc[ind,'kWh'] , bills.loc[ind,'dhw_arera'] / bills.loc[9,'dhw_arera'] * bills.loc[9,'kWh'])
+        bills.loc[ind,'dhw'] = min( bills.loc[ind,'kW'] , bills.loc[ind,'dhw_arera'] / bills.loc[9,'dhw_arera'] * bills.loc[9,'kW'])
     
     # calculate GGa and relative climate zone limits
     GGa = temp.loc[: , 'GG'].sum()
     if GGa < 600:
         climate_zone = ['03-15','12-01'] # A
-        bills.loc[4:11,'dhw'] = bills.loc[4:11,'kWh']
+        bills.loc[4:11,'dhw'] = bills.loc[4:11,'kW']
     elif GGa < 900:
         climate_zone = ['03-31','12-01'] # B
-        bills.loc[4:11,'dhw'] = bills.loc[4:11,'kWh']
+        bills.loc[4:11,'dhw'] = bills.loc[4:11,'kW']
     elif GGa < 1400:
         climate_zone = ['03-31','11-15'] # C
-        bills.loc[4:10,'dhw'] = bills.loc[4:10,'kWh']
+        bills.loc[4:10,'dhw'] = bills.loc[4:10,'kW']
     elif GGa < 2100:
         climate_zone = ['04-15','11-01'] # D
-        bills.loc[5:10,'dhw'] = bills.loc[5:10,'kWh']
+        bills.loc[5:10,'dhw'] = bills.loc[5:10,'kW']
     elif GGa < 3000:
         climate_zone = ['04-15','10-15'] # E
-        bills.loc[5:10,'dhw'] = bills.loc[5:10,'kWh']
+        bills.loc[5:10,'dhw'] = bills.loc[5:10,'kW']
     else:
         climate_zone = False             # F
-        bills.loc[5:10,'dhw'] = bills.loc[5:10,'kWh']
+        bills.loc[5:10,'dhw'] = bills.loc[5:10,'kW']
             
     if climate_zone:
         zone1 = f"{year}-{climate_zone[0]}"
         zone2 = f"{year}-{climate_zone[1]}"
         df.loc[zone1:zone2,'schedules'] = 0
             
-    bills['heating'] = bills['kWh'] - bills['dhw'] # devide heat from dhw and cooking
+    bills['heating'] = bills['kW'] - bills['dhw'] # devide heat from dhw and cooking
     
     temp['switch-on hours'] = df.resample('D').sum()['schedules']
     
@@ -303,10 +303,10 @@ def heating_profile(folder, bills, schedules, festivities, holidays, dhw, year, 
             h = df.loc[ind,'Hour']
             df.loc[ind,'dhw'] = bills.loc[m,'dhw/ng'] * dhw_profile.loc[h,'Profile'] / sum(dhw_profile['Profile'])
                  
-    df['kWh'] = df['heating'] + df['dhw']
+    df['kW'] = df['heating'] + df['dhw']
 
     df = df.round(3)
-    load = df.loc[:,'kWh']
+    load = df.loc[:,'kW']
     load = pd.DataFrame(load)
     
     # save file.csv
