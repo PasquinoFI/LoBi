@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-a = pd.read_csv(r'E:\mattia\desktop\GIT\LoBi\generated_profiles\Scuola_Pienza.csv')
+a = pd.read_csv('C://Users//pasqui//Desktop//GIT//LoBi//generated_profiles//bills_ele_test.csv')
 a.columns = ['Time','kWh']
 
 # un anno
