@@ -193,26 +193,10 @@ def heating_profile(folder, bills, schedules, festivities, holidays, dhw, year, 
     df['Month'] = df.index.month
     df['Hour'] = df.index.hour
        
-    # Air-temperature
-    check = True # True if latitude and longitude are not changed from the old simulation
-    directory = './previous_simulation'
-    if not os.path.exists(directory): os.makedirs(directory)
-    if os.path.exists('previous_simulation/location.pkl'):
-        with open('previous_simulation/location.pkl', 'rb') as f: location = pickle.load(f) # previous simulation location
-        if location['latitude'] != latitude or location['longitude'] != longitude:
-            check = False  
-    else:
-        check = False                     
-    if check and os.path.exists('previous_simulation/air_temperatures.csv'): # if the prevoius air_previous_simulatuion series can be used
-        temp = pd.read_csv('previous_simulation/air_temperatures.csv')
-    else: # if new air_temperature data must be downoladed from PV gis
-        print('Downolading typical metereological year data from PVGIS')   
-        temp = pvlib.iotools.get_pvgis_tmy(latitude, longitude, map_variables=True)[0]['temp_air']
-        temp = pd.DataFrame(temp)
-        temp.to_csv('previous_simulation/air_temperatures.csv')
-        # save new location in previous_simulation            
-        with open('previous_simulation/location.pkl', 'wb') as f: pickle.dump({'latitude':latitude,'longitude':longitude}, f)     
-    
+    # Air-temperature 
+    temp = pvlib.iotools.get_pvgis_tmy(latitude, longitude, map_variables=True)[0]['temp_air']
+    temp = pd.DataFrame(temp)
+
     # Schedules
     schedules.columns = [0,1,2,3,4,5,6,7]
     for i,ind in enumerate(df.index):
@@ -223,7 +207,9 @@ def heating_profile(folder, bills, schedules, festivities, holidays, dhw, year, 
     # GG
     datetime_index = pd.date_range(start = f'01-01-{year} 00:00', end   = f'31-12-{year} 23:00', freq  = 'H')    
     temp.index = datetime_index
-    temp = temp.resample('D').mean() # daily mean temperature
+   
+    temp = temp.resample('D')
+    temp= temp.mean() # daily mean temperature
     temp['Month'] = temp.index.month
     temp['GG'] = 20 - temp['temp_air']
     temp.loc[temp['GG'] < 0 , 'GG'] = 0

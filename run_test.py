@@ -18,11 +18,11 @@ dhw = 'dhw_test'
 festivities = 'festivities_test'
 holidays = 'holidays_test'
 
-#bills_gas = 'bills_gas_Golf'
-
 
 # ele load profiles generation
 ls.electricity_profile(folder,bills_ele,profiles,festivities,holidays, 2021)
+
+# try to add casuality to the electricity serie or to perform load shifting between time slots
 #ls.electricity_profile(folder,bills_ele,profiles,festivities,holidays, 2021, random = [0.002,3])
 #ls.electricity_profile(folder,bills_ele,profiles,festivities,holidays, 2021, random = [0.002,3], shifting = {"F3F1":30,"F2F1":20})
 
