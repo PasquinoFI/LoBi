@@ -1,6 +1,6 @@
 __pycache__/
 input_dev/
 generated_profiles/
-pre_processing/
-post_processing/
+pre_processing.py
+post_processing.py
 run_dev.py

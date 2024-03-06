@@ -34,6 +34,8 @@ ls.electricity_profile(folder,bills_ele,profiles,festivities,holidays, 2021)
 #ls.electricity_profile(folder,bills_ele,profiles,festivities,holidays, 2021, random = [0.002,3], shifting = {"F3F1":30,"F2F1":20})
 
 # heating load profiles generation
-ls.heating_profile(folder,bills_gas,schedules,festivities,holidays,dhw, 2021, latitude = 43.76, longitude = 11.28, climate_zone=True)
+#ls.heating_profile(folder,bills_gas,schedules,festivities,holidays,dhw, 2021, latitude = 43.76, longitude = 11.28, climate_zone=True)
 
 # you can find the generated profiles in "generated_profiles" folder.
+
+
