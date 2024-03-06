@@ -6,10 +6,15 @@ push run!
 
 from core import load_simulation as ls
 
-# choose input files
-folder = 'input_test'
+#%%################################################################ INPUT FILES
+
+folder = 'input_test' # folder in wwiich the input files are (you could creare your own input_dev and manage it from run_dev)
+
 bills_ele = 'bills_ele_test'
 profiles = 'ele_profiles_test'
+#profiles = 'ele_profiles_commercial_cigre'
+#profiles = 'ele_profiles_industrial_cigre'
+#profiles = 'ele_profiles_residential_cigre'
 
 bills_gas = 'bills_gas_test'
 schedules = 'heating_schedules_test'
@@ -18,6 +23,8 @@ dhw = 'dhw_test'
 festivities = 'festivities_test'
 holidays = 'holidays_test'
 
+
+#%%################################################################ RUN
 
 # ele load profiles generation
 ls.electricity_profile(folder,bills_ele,profiles,festivities,holidays, 2021)
